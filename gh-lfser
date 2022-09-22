@@ -1,39 +1,50 @@
 #!/usr/bin/env bash
 set -e
 
-#echo "Hello gh-lfser!"
+extensions_arg=""
+repo_arg=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+  --extensions)
+    extensions_arg=$2
+    shift
+    ;;
+  --repo)
+    repo_arg="$2"
+    shift
+    ;;
+  -h|--help)
+    echo "gh lfser --extensions <extensions> --repo <repo>"
+    exit 0
+    ;;
+  esac
+  shift
+done
 
-# Snippets to help get started:
+if [ -z "$extensions_arg" ]; then
+  echo "Please provide a list of extensions with the --extensions flag."
+  exit 1
+fi
 
-# Determine if an executable is in the PATH
-# if ! type -p ruby >/dev/null; then
-#   echo "Ruby not found on the system" >&2
-#   exit 1
-# fi
+echo "Migrating $repo_arg to LFS"
+echo "Extensions: $extensions_arg"
 
-# Pass arguments through to another command
-# gh issue list "$@" -R cli/cli
-
-# Using the gh api command to retrieve and format information
-# QUERY='
-#   query($endCursor: String) {
-#     viewer {
-#       repositories(first: 100, after: $endCursor) {
-#         nodes {
-#           nameWithOwner
-#           stargazerCount
-#         }
-#       }
-#     }
-#   }
-# '
-# TEMPLATE='
-#   {{- range $repo := .data.viewer.repositories.nodes -}}
-#     {{- printf "name: %s - stargazers: %v\n" $repo.nameWithOwner $repo.stargazerCount -}}
-#   {{- end -}}
-# '
-# exec gh api graphql -f query="${QUERY}" --paginate --template="${TEMPLATE}"
-
-exec gh repo clone $1 temp
-exec gh repo create $1-lfser
-
+if gh repo clone $repo_arg temp; then
+    cd temp
+    # create all branches locally
+    for REF in $(git for-each-ref --format='%(refname)' refs/remotes/origin/ | grep -v main | grep -v master | grep -v HEAD); do
+        BRANCH_NAME=${REF#refs/remotes/origin/}
+        git branch --track ${BRANCH_NAME} ${REF}
+    done
+    git lfs migrate import --everything --object-map=lfs-mapping.csv --include="$extensions_arg"
+    git reflog expire --expire=now --all
+    git gc --prune=now --aggressive
+    # push all branches
+    for REF in $(git for-each-ref --format='%(refname)' refs/heads); do
+        BRANCH_NAME=${REF#refs/heads/}
+        git push -f origin ${BRANCH_NAME}
+        git lfs push origin ${BRANCH_NAME} --all
+    done
+    # cleanup
+    cd .. ; rm -rf temp
+fi
