@@ -1,0 +1,1 @@
+If you believe you have found a security vulnerability please open an issue in this repo.
