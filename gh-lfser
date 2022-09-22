@@ -31,8 +31,9 @@ echo "Extensions: $extensions_arg"
 
 if gh repo clone $repo_arg temp; then
     cd temp
+    MAIN=`git rev-parse --abbrev-ref HEAD`
     # create all branches locally
-    for REF in $(git for-each-ref --format='%(refname)' refs/remotes/origin/ | grep -v main | grep -v master | grep -v HEAD); do
+    for REF in $(git for-each-ref --format='%(refname)' refs/remotes/origin/ | grep -v ${MAIN} | grep -v HEAD); do
         BRANCH_NAME=${REF#refs/remotes/origin/}
         git branch --track ${BRANCH_NAME} ${REF}
     done
