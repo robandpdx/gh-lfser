@@ -38,6 +38,8 @@ if gh repo clone $repo_arg temp; then
         git branch --track ${BRANCH_NAME} ${REF}
     done
     git lfs migrate import --everything --object-map=lfs-mapping.csv --include="$extensions_arg"
+    git add lfs-mapping.csv
+    git commit -m "Add LFS mapping"
     git reflog expire --expire=now --all
     git gc --prune=now --aggressive
     # push all branches
@@ -46,6 +48,7 @@ if gh repo clone $repo_arg temp; then
         git push -f origin ${BRANCH_NAME}
         git lfs push origin ${BRANCH_NAME} --all
     done
+    git push -f --tags
     # cleanup
     cd .. ; rm -rf temp
 fi

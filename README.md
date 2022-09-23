@@ -5,7 +5,9 @@ This GitHub CLI extension will migrate a repo to LFS. WARNING: This is destructi
 This will:
 1. Clone the repo
 1. Migrate files with the provided extension to LFS
-1. Force push all repo branches back to the origin.
+1. Commit lfs-mapping.csv file on default branch showing old sha to new sha mapping
+1. Force push all repo branches back to the origin
+1. Forge push all tags
 
 ## Permissions
 You need write access to the repo. The repo needs to allow force pushes to all branches. It's probably best to disable any branch protection rules that may be in place before running this.
