@@ -1,6 +1,6 @@
 # gh-lfser
 
-This [GitHub CLI](https://cli.github.com/) extension will migrate a repo to LFS. WARNING: This is destructive!! The repo pull requests will be outdated after this operation because the commit shas will change as a result of the history being rewritten.
+This [GitHub CLI](https://cli.github.com/) extension will migrate a repo to LFS. WARNING: This is destructive!! I recommend you test this operation on a fork first! The repo pull requests will be outdated after this operation because the commit shas will change as a result of the history being rewritten.
 
 This will:
 1. Clone the repo
